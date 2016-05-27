@@ -1,0 +1,27 @@
+<?php
+
+
+Route::get('/', function () {
+    return view('welcome');
+});
+
+Route::get('tags','TagController@search');
+Route::POST('findTag','TagController@find');
+Route::GET('adtag','TagController@addTag');
+Route::POST('addTag','TagController@add');
+
+
+Route::get('signup','HomeController@signupform');
+Route::post('signme','HomeController@signme');
+Route::POST('update','HomeController@update');
+
+
+Route::get('sendmail','ErrorController@sendmail');
+Route::get('exception','ErrorController@exceptions');
+Route::get('trymail',"ErroController@semail");
+
+
+Route::get('sms','SmsController@get');
+Route::POST('validation','SmsController@checkvalidation');
+Route::get('error_page_found','SmsController@error');
+Route::get('sendsms','SmsController@send');

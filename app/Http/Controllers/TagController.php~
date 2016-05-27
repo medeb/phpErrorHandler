@@ -1,0 +1,168 @@
+<?php 
+namespace App\Http\Controllers;
+
+use DB;
+use Illuminate\Support\Facades\View;
+use Illuminate\Http\Request;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Support\Facades\Input;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Eloquent\Model; 
+use Illuminate\Support\Facades\Mail;
+use App\tag;
+use App\Exceptions\CustomException;
+use App\articletag;
+use App\article;
+
+
+
+class TagController extends Controller{
+
+	public function search(){
+		return view('tagview');
+	}
+	public function find(Request $request){
+
+		$find=$request->input('tags');
+		
+	//DB::table('tag')->insert(['Tag'=>$find]); connected to the database 
+	//echo $find; 
+
+	/*
+	$tag=DB::table('tag')->where('Tag','=',$find)->first();
+    if($tag==true){
+   	return view::make('display',['tag'=>$tag->posts]);
+	}else
+	{     
+		echo "No matches found try another but we have added your tags to our system not to dissapoint you next time";
+		DB::table('tag')->insert(['Tag'=>$find]);
+	}
+*/
+	$findtag=tag::where('tagsName','=',$find)->get();
+    //dump($findtag);
+    if($findtag){
+	//foreach ($findtag as $findid) {
+        $take=$findtag[0]->id;
+        //dump($take);
+        $articletagid=DB::table('articletags')->select('articles_id')->where('tag_id','=',$take)->get();
+        //dump($articletagid);
+
+       foreach ($articletagid as $a_id) {
+        $articletag=$a_id->articles_id;
+       // dump($articletag);
+         $results[]=article::where('id','=',$articletag)->first();//dump($results);
+        /*foreach ($results as $result) {
+            echo '<h2>'.$result->Title.'</h2>';
+            echo '<p>'.$result->article.'</p>';
+        }*/
+       // echo $results[0]->Title;
+       //$ret=$results->Title;
+       //}
+      // dump($results);
+       //foreach ($results as $result) {
+           # code...
+       
+     //return view::make('search')->with('result',$results);
+   }
+
+    //dump($results);
+   return view::make('search')->with('result',$results);
+      
+        //dump($results);//echo $results->Title;}
+        //dump($results);
+        // $search[0]->Title;
+        //
+      // return view::make('search',['titles'=>$results[0]->Title,'article'=>$results[0]->article]);
+      
+        //return view::make('search')->with('article',$search->article);
+    
+}
+    else
+    {
+        echo 'Tag Not Found';
+    }
+    //$i=Tag::where('id',$find);
+	
+  //return view::make('search',['tags'=>$findtag]);
+	
+			//return view::make('display')->with('findtag',$findtag);
+		//$tag->tagsName();
+			/*$tag=tag::where('tagsName',$catch);
+			if($tag==true){
+				
+             echo 'found';
+            
+        }
+			
+    }*/}
+
+
+
+
+
+
+    public function addTag()
+    {
+    	return view ('display');
+    }
+    public function add(Input $input){
+    	$get=$input::get('addtags');
+        $title=$input::get('Title');
+        $body=$input::get('body');
+        $article=new article;
+        $article->Title=$title;
+        $article->article=$body;
+        $article->save();
+    	//$check=tag::where('tagsName','=',$get)->count();
+         $value=explode(",",$get);
+         //dump($value);
+
+    	foreach ($value as $val) {
+    	   $bool=$this->check($val);
+    	   if($bool == false){
+    	   $tag=new tag;
+    	   $tag->tagsName=$val;
+    	   $tag->save();
+           DB::table('articletags')->insert(['tag_id'=>$tag->id,'articles_id'=>$article->id]);
+           //DB::table('articletags')->insert([]);
+          
+    	  // DB::table('articletags')->insert(['tag_id'=>$tag->id]);
+     	  
+     	  /* $tagidnew=new articletag;
+           $tagidnew->tag_id=$store;
+           $tagidnew->save();*/
+     	  
+        }
+        else{
+        	$store=$bool;
+
+          // DB::table('articletags')->insert([]);
+           DB::table('articletags')->insert(['tag_id'=>$store,'articles_id'=>$article->id]);
+        	/*$tagid=new articletag;
+        	$tagid->tag_id=$store;
+        	$tagid->save();*/
+             //dump($store);
+           
+        }
+   		}
+
+
+
+    }
+
+    public function check($new){
+    	$checkit=tag::where("tagsName",'=',$new)->first();
+        
+    	//dump($checkit[0]->id);
+    //	dump($checkit);
+    	if($checkit==NULL){
+    	    return false;
+          	}
+    	else{
+      return $checkit->id;
+
+    		}
+    	
+    }
+
+}
